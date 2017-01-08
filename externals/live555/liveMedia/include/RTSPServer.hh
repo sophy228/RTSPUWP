@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // C++ header
 
@@ -260,16 +260,6 @@ protected:
   // to create new objects of your subclass:
   virtual ClientSession* createNewClientSession(u_int32_t sessionId);
 
-  // An iterator over our "ServerMediaSession" objects:
-  class ServerMediaSessionIterator {
-  public:
-    ServerMediaSessionIterator(RTSPServer& server);
-    virtual ~ServerMediaSessionIterator();
-    ServerMediaSession* next();
-  private:
-    HashTable::Iterator* fOurIterator;
-  };
-
 private:
   static void incomingConnectionHandlerHTTP(void*, int /*mask*/);
   void incomingConnectionHandlerHTTP();
@@ -281,7 +271,6 @@ private:
 private:
   friend class RTSPClientConnection;
   friend class RTSPClientSession;
-  friend class ServerMediaSessionIterator;
   friend class RegisterRequestRecord;
   int fHTTPServerSocket; // for optional RTSP-over-HTTP tunneling
   Port fHTTPServerPort; // ditto

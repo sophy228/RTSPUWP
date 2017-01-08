@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // A template for a MediaSource encapsulating an audio/video input device
 //
 // NOTE: Sections of this code labeled "%%% TO BE WRITTEN %%%" are incomplete, and need to be written by the programmer
@@ -23,10 +23,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "DeviceSource.hh"
 #include <GroupsockHelper.hh> // for "gettimeofday()"
-
-//#include <stdio.h>
-//#include <stdlib.h>
-#include <stdint.h>
 
 DeviceSource*
 DeviceSource::createNew(UsageEnvironment& env,
@@ -44,7 +40,6 @@ DeviceSource::DeviceSource(UsageEnvironment& env,
   if (referenceCount == 0) {
     // Any global initialization of the device would be done here:
     //%%% TO BE WRITTEN %%%
-
   }
   ++referenceCount;
 

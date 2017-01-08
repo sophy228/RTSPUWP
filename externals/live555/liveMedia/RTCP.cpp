@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // RTCP
 // Implementation
 
@@ -24,6 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
 #define snprintf _snprintf
 #endif
+#define HACK_FOR_CHROME_WEBRTC_BUG 1 //#####@@@@@
 
 ////////// RTCPMemberDatabase //////////
 
@@ -38,11 +39,11 @@ public:
 	delete fTable;
   }
 
-  Boolean isMember(unsigned ssrc) const {
+  Boolean isMember(u_int32_t ssrc) const {
     return fTable->Lookup((char*)(long)ssrc) != NULL;
   }
 
-  Boolean noteMembership(unsigned ssrc, unsigned curTimeCount) {
+  Boolean noteMembership(u_int32_t ssrc, unsigned curTimeCount) {
     Boolean isNew = !isMember(ssrc);
 
     if (isNew) {
@@ -55,7 +56,7 @@ public:
     return isNew;
   }
 
-  Boolean remove(unsigned ssrc) {
+  Boolean remove(u_int32_t ssrc) {
     Boolean wasPresent = fTable->Remove((char*)(long)ssrc);
     if (wasPresent) {
       --fNumMembers;
@@ -102,7 +103,7 @@ void RTCPMemberDatabase::reapOldMembers(unsigned threshold) {
 #ifdef DEBUG
         fprintf(stderr, "reap: removing SSRC 0x%x\n", oldSSRC);
 #endif
-      fOurRTCPInstance.removeSSRC(oldSSRC, True);
+	fOurRTCPInstance.removeSSRC(oldSSRC, True);
     }
   } while (foundOldMember);
 }
@@ -537,6 +538,15 @@ void RTCPInstance
       // Assume that each RTCP subpacket begins with a 4-byte SSRC:
       if (length < 4) break; length -= 4;
       reportSenderSSRC = ntohl(*(u_int32_t*)pkt); ADVANCE(4);
+#ifdef HACK_FOR_CHROME_WEBRTC_BUG
+      if (reportSenderSSRC == 0x00000001 && pt == RTCP_PT_RR) {
+	// Chrome (and Opera) WebRTC receivers have a bug that causes them to always send
+	// SSRC 1 in their "RR"s.  To work around this (to help us distinguish between different
+	// receivers), we use a fake SSRC in this case consisting of the IP address, XORed with
+	// the port number:
+	reportSenderSSRC = fromAddressAndPort.sin_addr.s_addr^fromAddressAndPort.sin_port;
+      }
+#endif
 
       Boolean subPacketOK = False;
       switch (pt) {
@@ -825,8 +835,7 @@ void RTCPInstance
   } while (0);
 }
 
-void RTCPInstance::onReceive(int typeOfPacket, int totPacketSize,
-			     unsigned ssrc) {
+void RTCPInstance::onReceive(int typeOfPacket, int totPacketSize, u_int32_t ssrc) {
   fTypeOfPacket = typeOfPacket;
   fLastReceivedSize = totPacketSize;
   fLastReceivedSSRC = ssrc;
@@ -980,7 +989,7 @@ void RTCPInstance::addRR() {
 }
 
 void RTCPInstance::enqueueCommonReportPrefix(unsigned char packetType,
-					     unsigned SSRC,
+					     u_int32_t SSRC,
 					     unsigned numExtraWords) {
   unsigned numReportingSources;
   if (fSource == NULL) {
