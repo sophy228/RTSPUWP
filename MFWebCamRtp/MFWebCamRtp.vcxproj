@@ -138,7 +138,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExceptionHandling>SyncCThrow</ExceptionHandling>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <AdditionalIncludeDirectories>H:\study\项目\homecamera\mediafoundationsamples\externals\live555\UsageEnvironment\include;H:\study\项目\homecamera\mediafoundationsamples\externals\live555\groupsock\include;H:\study\项目\homecamera\mediafoundationsamples\externals\live555\BasicUsageEnvironment\include;H:\study\项目\homecamera\mediafoundationsamples\externals\live555\liveMedia\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)externals\live555\BasicUsageEnvironment\include;$(SolutionDir)externals\live555\groupsock\include;$(SolutionDir)externals\live555\liveMedia\include;$(SolutionDir)externals\live555\UsageEnvironment\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
     </ClCompile>
     <Link>
@@ -255,6 +255,14 @@
     <ProjectReference Include="..\externals\live555\UsageEnvironment\UsageEnvironment.vcxproj">
       <Project>{bf6c41bf-08fb-41ca-a392-aad0c2646518}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="file.mp4">
+      <DeploymentContent>true</DeploymentContent>
+    </Media>
+    <Media Include="test.mp4">
+      <DeploymentContent>true</DeploymentContent>
+    </Media>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

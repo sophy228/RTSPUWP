@@ -19,4 +19,8 @@
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="test.mp4" />
+    <Media Include="file.mp4" />
+  </ItemGroup>
 </Project>

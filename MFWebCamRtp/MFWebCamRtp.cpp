@@ -1,4 +1,4 @@
-/// Filename: MFWebCamRtp.cpp
+﻿/// Filename: MFWebCamRtp.cpp
 ///
 /// Description:
 /// This file contains a C++ console application that captures the realtime video stream from a webcam using 
@@ -362,8 +362,101 @@ public:
 
 		printf("MediaFoundationH264LiveSource doGetNextFrame failed.\n");
 	}
+
+	virtual unsigned maxFrameSize() const
+	{ return 100 * 1024; }
+
 };
 
+class WebcamOndemandMediaSubsession : public OnDemandServerMediaSubsession
+{
+public:
+	static WebcamOndemandMediaSubsession *createNew(UsageEnvironment &env, FramedSource *source)
+	{
+		return new WebcamOndemandMediaSubsession(env, source);
+	}
+
+protected:
+	WebcamOndemandMediaSubsession (UsageEnvironment &env, FramedSource *source)
+		: OnDemandServerMediaSubsession(env, True)// reuse the first source  
+	{
+		//fprintf(stderr, "[%d] %s .... calling\n", gettid(), __func__);
+		mp_source = source;
+		mp_sdp_line = 0;
+	}
+
+	~WebcamOndemandMediaSubsession()
+	{
+		//fprintf(stderr, "[%d] %s .... calling\n", gettid(), __func__);
+		if (mp_sdp_line) free(mp_sdp_line);
+	}
+
+private:
+	static void afterPlayingDummy (void *ptr)
+	{
+	//	fprintf(stderr, "[%d] %s .... calling\n", gettid(), __func__);
+		// ok  
+		WebcamOndemandMediaSubsession *This = (WebcamOndemandMediaSubsession*)ptr;
+		This->m_done = 0xff;
+	}
+
+	static void chkForAuxSDPLine (void *ptr)
+	{
+		WebcamOndemandMediaSubsession *This = (WebcamOndemandMediaSubsession *)ptr;
+		This->chkForAuxSDPLine1();
+	}
+
+	void chkForAuxSDPLine1 ()
+	{
+		//fprintf(stderr, "[%d] %s .... calling\n", gettid(), __func__);
+		if (mp_dummy_rtpsink->auxSDPLine())
+			m_done = 0xff;
+		else {
+			int delay = 100 * 1000; // 100ms  
+		nextTask() = envir().taskScheduler().scheduleDelayedTask(delay,
+			chkForAuxSDPLine, this);
+		}
+	}
+
+protected:
+	virtual const char *getAuxSDPLine (RTPSink *sink, FramedSource *source)
+	{
+		//fprintf(stderr, "[%d] %s .... calling\n", gettid(), __func__);
+		if (mp_sdp_line) return mp_sdp_line;
+
+		mp_dummy_rtpsink = sink;
+		mp_dummy_rtpsink->startPlaying(*source, 0, 0);
+		//mp_dummy_rtpsink->startPlaying(*source, afterPlayingDummy, this);  
+		chkForAuxSDPLine(this);
+		m_done = 0;
+		envir().taskScheduler().doEventLoop(&m_done);
+		mp_sdp_line = _strdup(mp_dummy_rtpsink->auxSDPLine());
+		mp_dummy_rtpsink->stopPlaying();
+		printf("sdp:%s\n", mp_sdp_line);
+		return mp_sdp_line;
+	}
+
+	virtual RTPSink *createNewRTPSink(Groupsock *rtpsock, unsigned char type, FramedSource *source)
+	{
+	//	fprintf(stderr, "[%d] %s .... calling\n", gettid(), __func__);
+		return H264VideoRTPSink::createNew(envir(), rtpsock, type);
+	}
+
+	virtual FramedSource *createNewStreamSource (unsigned sid, unsigned &bitrate)
+	{
+		//fprintf(stderr, "[%d] %s .... calling\n", gettid(), __func__);
+		bitrate = 500;
+		return H264VideoStreamFramer::createNew(envir(), new MediaFoundationH264LiveSource(envir()));
+		//return mp_source;
+	}
+
+private:
+	FramedSource *mp_source; // 对应 WebcamFrameSource  
+	char *mp_sdp_line;
+	RTPSink *mp_dummy_rtpsink;
+	char m_done;
+};
+#define TEST_LIVE
 int main()
 {
 	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -371,15 +464,47 @@ int main()
 
 	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
 	UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
-
+	MediaFoundationH264LiveSource * mediaFoundationH264Source = MediaFoundationH264LiveSource::createNew(*env);
+#ifdef TEST_RTP
 	in_addr dstAddr = { 192, 168, 1, 2};
 	Groupsock rtpGroupsock(*env, dstAddr, 1233, 255);
 	rtpGroupsock.addDestination(dstAddr, 1234, 0);
 	RTPSink * rtpSink = H264VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
-	//rtpSink->setPacketSizes(5000000, 5000000);
-	MediaFoundationH264LiveSource * mediaFoundationH264Source = MediaFoundationH264LiveSource::createNew(*env);
 	rtpSink->startPlaying(*mediaFoundationH264Source, NULL, NULL);
 	printf("%s", rtpSink->auxSDPLine());
+#else
+
+	RTSPServer *rtspServer  = RTSPServer::createNew(*env, 8554);
+	if (!rtspServer) {
+		fprintf(stderr, "ERR: create RTSPServer err\n");
+		::exit(-1);
+	}
+#ifdef TEST_LIVE
+
+
+
+	// add live stream  
+	do {
+	ServerMediaSession *sms  = ServerMediaSession::createNew(*env, "webcam", 0, "Session from /dev/video0");
+	sms->addSubsession(WebcamOndemandMediaSubsession::createNew(*env, mediaFoundationH264Source));
+	rtspServer->addServerMediaSession(sms);
+	char *url  = rtspServer->rtspURL(sms);
+	*env << "using url \"" << url  << "\"\n";
+	delete [] url;
+	} while (0);
+#else
+	//OutPacketBuffer::maxSize = 195120;
+	ServerMediaSession *sms = ServerMediaSession::createNew(*env, "webcam");
+	H264VideoFileServerMediaSubsession * hms = H264VideoFileServerMediaSubsession::createNew(*env, "file.mp4", false);
+	sms->addSubsession(hms);
+	rtspServer->addServerMediaSession(sms);
+	char *url = rtspServer->rtspURL(sms);
+
+	*env << "using url \"" << url << "\"\n";
+	delete[] url;
+
+#endif // TEST_LIVE
+#endif
 	// This function call does not return.
 	env->taskScheduler().doEventLoop();
 
