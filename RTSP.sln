@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UsageEnvironment", "externa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFWebCamRtp", "MFWebCamRtp\MFWebCamRtp.vcxproj", "{F40D21EA-A8F3-4E63-A961-7A7659CB0071}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFWebCamRtsp", "MFWebCamRtsp\MFWebCamRtsp.vcxproj", "{F6928161-0654-4B97-A56E-815F57D4CD41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -84,6 +86,18 @@ Global
 		{F40D21EA-A8F3-4E63-A961-7A7659CB0071}.Release|x64.Build.0 = Release|x64
 		{F40D21EA-A8F3-4E63-A961-7A7659CB0071}.Release|x86.ActiveCfg = Release|Win32
 		{F40D21EA-A8F3-4E63-A961-7A7659CB0071}.Release|x86.Build.0 = Release|Win32
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Debug|ARM.ActiveCfg = Debug|ARM
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Debug|ARM.Build.0 = Debug|ARM
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Debug|ARM.Deploy.0 = Debug|ARM
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Debug|x64.ActiveCfg = Debug|x64
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Debug|x64.Build.0 = Debug|x64
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Debug|x86.ActiveCfg = Debug|Win32
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Debug|x86.Build.0 = Debug|Win32
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Release|ARM.ActiveCfg = Release|Win32
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Release|x64.ActiveCfg = Release|x64
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Release|x64.Build.0 = Release|x64
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Release|x86.ActiveCfg = Release|Win32
+		{F6928161-0654-4B97-A56E-815F57D4CD41}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

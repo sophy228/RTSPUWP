@@ -133,6 +133,7 @@
     </Link>
     <Lib>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>ws2_32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -152,6 +153,7 @@
     </Link>
     <Lib>
       <TargetMachine>MachineARM</TargetMachine>
+      <AdditionalDependencies>ws2_32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
